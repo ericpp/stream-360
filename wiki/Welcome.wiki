@@ -1,0 +1,15 @@
+#labels Featured
+== Introduction ==
+connect360 allows your XBox 360 to connect to your Linux-based computer. It is in a superalpha state and is far from being bug-free.
+
+== Compiling ==
+To compile connect360, you need to have the libupnp, ffmpeg, and libid3tag development libraries installed on your system. After those are installed, you should be able to perform  a simple *make* to compile the program.
+
+== Configuration ==
+Right now there is only one config file: *connect360.cfg*. Place the paths to your media in this file. 
+
+== Running ==
+Simply run *connect360* in a console to start the program.
+
+== Supported Types ==
+Right now the only media supported by connect360 is the media directly supported by the XBox 360 (ie: Windows Media Video/Audio, MP3). I plan on adding in a transcoder to allow for more media types to be supported.
