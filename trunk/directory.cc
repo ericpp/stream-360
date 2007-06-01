@@ -30,7 +30,8 @@ Directory::Directory() {
 	this->artists = new Container(6, this->rootContainer, "object.container.person.musicArtist", "#artists#");
 	this->albums = new Container(7, this->rootContainer, "object.container.album.musicAlbum", "#albums#");
 	this->songs = new Container(4, this->rootContainer, "object.item.audioItem", "#songs#");
-	this->videos = new Container(8, this->rootContainer, "object.item.videoItem", "#videos#");
+	this->videos = new Container(15, this->rootContainer, "object.item.videoItem", "#videos#");
+	//this->videos = new Container(8, this->rootContainer, "object.item.videoItem", "#videos#");
 
 	this->rootContainer->addContainer(this->artists);
 	this->rootContainer->addContainer(this->albums);
@@ -101,14 +102,14 @@ int Directory::addFolder(string path) {
 					this->addFolder(filePath);
 				}
 				else if(S_ISREG(fStat.st_mode)) {
-					if(filePath.find(".mp3") != string::npos || filePath.find(".wma") != string::npos) {
+					if(filePath.find(".mp3") != string::npos || filePath.find(".wav") != string::npos || filePath.find(".wma") != string::npos) {
 						res = new Music(this->globalID++, filePath);
 						if(res != NULL) {
 							this->addMusic((Music*)res);
 						}
 					}
-					else if((filePath.find(".wmv") != string::npos)) {
-					//else if((filePath.find(".wmv") != string::npos) || (filePath.find(".avi") != string::npos) || (filePath.find(".asf") != string::npos) || (filePath.find(".mov") != string::npos) || (filePath.find(".mpg") != string::npos)){
+					//else if((filePath.find(".wmv") != string::npos)) {
+					else if((filePath.find(".wmv") != string::npos) || (filePath.find(".avi") != string::npos) || (filePath.find(".asf") != string::npos) || (filePath.find(".mov") != string::npos) || (filePath.find(".mpg") != string::npos)){
 						res = new Video(this->globalID++, string(dirent->d_name), filePath);
 						if(res != NULL) {
 							this->addVideo((Video*)res);
@@ -194,7 +195,7 @@ map<string,string> Directory::getSearchCriteria(string criteria) {
 	return result;
 }
 
-int Directory::handleRequest(Upnp_Action_Request* request) {
+int Directory::handleSearch(Upnp_Action_Request* request) {
 	IXML_Document* actrequest;
 	IXML_Document* didldoc;
 	IXML_Document* doc;
@@ -210,6 +211,7 @@ int Directory::handleRequest(Upnp_Action_Request* request) {
 
 	// process the request
 	actrequest = request->ActionRequest;
+
 	nodes = ixmlElement_getElementsByTagName((IXML_Element*)request->ActionRequest, "u:Search");
 	element = (IXML_Element*) ixmlNodeList_item(nodes, 0);
 	containerID = getChildValue(element, "ContainerID");
@@ -328,200 +330,8 @@ int Directory::handleRequest(Upnp_Action_Request* request) {
 				}				
 			}
 		}
-		/*rcon = this->rootContainer->getContainerById(cID, true);
-		if(rcon != NULL) {
-			if(rcon->numContainers() > 0) {
-				map<unsigned,Container*> containers;
-				map<unsigned,Container*>::iterator coniterator;
-
-				containers = rcon->getContainers();
-				coniterator = containers.begin();
-				while(coniterator != containers.end()) {
-					con = coniterator->second;
-cout << con->getXML() << endl;
-					container = makeElement(didldoc, (IXML_Node*) parent, "container", NULL);
-
-					temp.str(""); temp << con->getID();
-					ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-
-					temp.str(""); temp << con->getParentID();
-					ixmlElement_setAttribute(container, "parentID", (char*)temp.str().c_str());
-					ixmlElement_setAttribute(container, "restricted", "1");
-					////ixmlElement_setAttribute(container, "childCount", "1");
-
-					element = makeElement(didldoc, (IXML_Node*) container, "dc:title", con->getTitle().c_str());
-					element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", con->getType().c_str());
-
-					coniterator++;
-					numReturned++;
-				}
-			}
-
-			if(rcon->numResources() > 0) {
-				map<unsigned,Resource*> resources;
-				map<unsigned,Resource*>::iterator resiterator;
-
-				resources = rcon->getResources();
-				resiterator = resources.begin();
-				while(resiterator != resources.end()) {
-					res = resiterator->second;
-cout << res->getXML() << endl;
-
-					if(!res->title.empty()) {
-						container = makeElement(didldoc, (IXML_Node*) parent, "item", NULL);
-						temp.str(""); temp << res->id;
-						ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-						ixmlElement_setAttribute(container, "parentID", "0");
-						ixmlElement_setAttribute(container, "restricted", "1");
-						////ixmlElement_setAttribute(container, "childCount", "1");
-
-						element = makeElement(didldoc, (IXML_Node*) container, "dc:title", res->title.c_str());
-						element = makeElement(didldoc, (IXML_Node*) container, "upnp:artist", res->artist.c_str());
-						element = makeElement(didldoc, (IXML_Node*) container, "upnp:album", res->album.c_str());
-						element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", "object.container.audioItem.musicTrack");
-
-						temp.str(""); temp << "http://" << UpnpGetServerIpAddress() << ":" << UpnpGetServerPort() << "/content/" << res->id;
-						element = makeElement(didldoc, (IXML_Node*) container, "res", temp.str().c_str());
-
-						temp.str(""); temp << res->filesize;
-						ixmlElement_setAttribute(element, "size", (char*)temp.str().c_str());
-						//ixmlElement_setAttribute(element, "duration", "0:03:20.000");
-						ixmlElement_setAttribute(element, "protocolInfo", "http-get:*:audio/mpeg:*");
-
-						numReturned++;
-					}
-					resiterator++;
-				}
-			}
-		}*/
 	}
-	/*if(containerID == "6") { // Artist
-		map<unsigned,Container*> artists;
-		map<unsigned, Container*>::iterator iterator;
-		
-		artists = this->artists->getContainers();
-		iterator = artists.begin();
 
-		while(iterator != artists.end()) {
-			Container* con = iterator->second;
-
-			container = makeElement(didldoc, (IXML_Node*) parent, "container", NULL);
-
-			temp.str(""); temp << con->getID();
-			ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-
-			temp.str(""); temp << con->getParentID();
-			ixmlElement_setAttribute(container, "parentID", (char*)temp.str().c_str());
-			ixmlElement_setAttribute(container, "restricted", "1");
-			////ixmlElement_setAttribute(container, "childCount", "1");
-
-			element = makeElement(didldoc, (IXML_Node*) container, "dc:title", con->getTitle().c_str());
-			element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", "object.container.person.musicArtist");
-
-			numReturned++;
-			iterator++;
-		}
-	}
-	else if(containerID == "4") { // All Songs
-		map<unsigned,Resource*> resources;
-		map<unsigned,Resource*>::iterator iterator;
-		Resource* res;
-
-		resources = this->songs->getResources();
-		iterator = resources.begin();
-		while(iterator != resources.end()) {
-			res = (Resource*) iterator->second;
-			
-			if(!res->title.empty()) {
-				container = makeElement(didldoc, (IXML_Node*) parent, "item", NULL);
-				temp.str(""); temp << res->id;
-				ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-				ixmlElement_setAttribute(container, "parentID", "0");
-				ixmlElement_setAttribute(container, "restricted", "1");
-				////ixmlElement_setAttribute(container, "childCount", "1");
-
-				element = makeElement(didldoc, (IXML_Node*) container, "dc:title", res->title.c_str());
-				element = makeElement(didldoc, (IXML_Node*) container, "upnp:artist", res->artist.c_str());
-				element = makeElement(didldoc, (IXML_Node*) container, "upnp:album", res->album.c_str());
-				element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", "object.container.audioItem.musicTrack");
-
-				temp.str(""); temp << "http://" << UpnpGetServerIpAddress() << ":" << UpnpGetServerPort() << "/content/" << res->id;
-				element = makeElement(didldoc, (IXML_Node*) container, "res", temp.str().c_str());
-
-				temp.str(""); temp << res->filesize;
-				ixmlElement_setAttribute(element, "size", (char*)temp.str().c_str());
-				//ixmlElement_setAttribute(element, "duration", "0:03:20.000");
-				ixmlElement_setAttribute(element, "protocolInfo", "http-get:*:audio/mpeg:*");
-
-				numReturned++;
-			}
-			iterator++;
-		}
-	}
-	else { // Some other container
-		Container* con;
-		
-		con = this->rootContainer->getContainerById(containerID, true);
-		if(con != NULL) {
-			container = makeElement(didldoc, (IXML_Node*) parent, "container", NULL);
-
-			temp.str(""); temp << con->getID();
-			ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-
-			temp.str(""); temp << con->getParentID();
-			ixmlElement_setAttribute(container, "parentID", (char*)temp.str().c_str());
-			ixmlElement_setAttribute(container, "restricted", "1");
-			////ixmlElement_setAttribute(container, "childCount", "1");
-
-			element = makeElement(didldoc, (IXML_Node*) container, "dc:title", con->getTitle().c_str());
-			element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", "object.container.person.musicArtist");
-
-			numReturned++;
-			iterator++;
-		}
-	}
-	else {
-		int cID;
-		map<int, Container*>::iterator iterator;
-
-		cID = atoi(containerID.c_str());
-		iterator = this->containers.find(cID);
-		if(iterator != this->containers.end()) {
-			Container* con = iterator->second;
-			vector<Resource*>::iterator resiterator;
-			Resource* res;
-printf("found container %x\n", con); fflush(stdout);
-			resiterator = con->getResourcesByTitle().begin();
-			while(resiterator != con->getResourcesByTitle().end()) {
-				res = (Resource*) *resiterator;
-				
-				if(!res->title.empty()) {
-					container = makeElement(didldoc, (IXML_Node*) parent, "item", NULL);
-					temp.str(""); temp << res->id;
-					ixmlElement_setAttribute(container, "id", (char*)temp.str().c_str());
-					ixmlElement_setAttribute(container, "parentID", (char*)containerID.c_str());
-					ixmlElement_setAttribute(container, "restricted", "1");
-					////ixmlElement_setAttribute(container, "childCount", "1");
-
-					element = makeElement(didldoc, (IXML_Node*) container, "dc:title", res->title.c_str());
-					element = makeElement(didldoc, (IXML_Node*) container, "upnp:artist", res->artist.c_str());
-					element = makeElement(didldoc, (IXML_Node*) container, "upnp:album", res->album.c_str());
-					element = makeElement(didldoc, (IXML_Node*) container, "upnp:class", "object.container.audioItem.musicTrack");
-
-					temp.str(""); temp << "http://" << UpnpGetServerIpAddress() << ":" << UpnpGetServerPort() << "/content/" << res->id;
-					element = makeElement(didldoc, (IXML_Node*) container, "res", temp.str().c_str());
-
-					temp.str(""); temp << res->filesize;
-					ixmlElement_setAttribute(element, "size", (char*)temp.str().c_str());
-					//ixmlElement_setAttribute(element, "duration", "0:03:20.000");
-					ixmlElement_setAttribute(element, "protocolInfo", "http-get:*:audio/mpeg:*");
-
-					numReturned++;
-				}
-				resiterator++;
-			}			
-		}
-	}*/
 
 	cout << "creating soapage" << endl;
 	doc = ixmlDocument_createDocument();
@@ -537,4 +347,135 @@ printf("found container %x\n", con); fflush(stdout);
 	//printf("Response: %s", ixmlPrintDocument(doc));
 
 	request->ActionResult = doc;
+
+	return 1;
+}
+
+int Directory::handleBrowse(Upnp_Action_Request* request) {
+	IXML_Document* actrequest;
+	IXML_Document* didldoc;
+	IXML_Document* doc;
+	IXML_Element* parent;
+	IXML_Element* element;
+	IXML_NodeList* nodes;
+	int numReturned = 0;
+
+	string containerID;
+	string browseFlag;
+	string filter;
+
+	// process the request
+	actrequest = request->ActionRequest;
+
+	nodes = ixmlElement_getElementsByTagName((IXML_Element*)request->ActionRequest, "u:Browse");
+	element = (IXML_Element*) ixmlNodeList_item(nodes, 0);
+	containerID = getChildValue(element, "ContainerID");
+	browseFlag = getChildValue(element, "BrowseFlag");
+	filter = getChildValue(element, "Filter");
+
+	cout << "browsing" << endl;
+
+	// construct the didl document
+	cout << "making didl doc" << endl;
+	didldoc = ixmlDocument_createDocument();
+	parent = makeElement(didldoc, (IXML_Node*) didldoc, "DIDL-Lite", NULL);
+	ixmlElement_setAttribute(parent, "xmlns:dc", "http://purl.org/dc/elements/1.1/");
+	ixmlElement_setAttribute(parent, "xmlns:upnp", "urn:schemas-upnp-org:metadata-1-0/upnp/");
+	ixmlElement_setAttribute(parent, "xmlns", "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/");
+
+	ostringstream temp;
+	cout << "looping through results" << endl;
+	int cID = atoi(containerID.c_str());
+	if(cID != -1) {
+		Container* top;
+		Container* con;
+		Resource* res;
+		string xml;
+		IXML_Document* tdoc;
+		IXML_Node* tnode;
+		IXML_Node* cnode;
+
+		top = this->rootContainer->getContainerById(cID, true);
+
+		if(top != NULL) {
+			if(top->numContainers() > 0) {
+				map<unsigned,Container*> containers;
+				map<unsigned,Container*>::iterator coniterator;
+
+				containers = top->getContainers();
+				coniterator = containers.begin();
+				while(coniterator != containers.end()) {
+					con = coniterator->second;
+					xml = "<root>" + con->getXML() + "</root>";
+					tdoc = ixmlParseBuffer((char*)xml.c_str());
+					if(tdoc != NULL) {
+						cnode = ixmlNode_getFirstChild((IXML_Node*) tdoc);
+						if(ixmlDocument_importNode(didldoc, cnode, TRUE, &tnode) == IXML_SUCCESS) {
+							ixmlNode_appendChild((IXML_Node*)parent, tnode);
+							numReturned++;
+						}
+						ixmlDocument_free(tdoc);
+					}
+					coniterator++;
+				}
+			}
+			if(top->numResources() > 0) {
+				map<unsigned,Resource*> resources;
+				map<unsigned,Resource*>::iterator resiterator;
+
+				resources = top->getResources();
+				resiterator = resources.begin();
+				while(resiterator != resources.end()) {
+					res = resiterator->second;
+					if(res->getType() == "object.item.audioItem") {
+						Music* mus = (Music*) res;
+						xml = "<root>" + mus->getXML() + "</root>";
+						tdoc = ixmlParseBuffer((char*)xml.c_str());
+						if(tdoc != NULL) {
+							cnode = ixmlNode_getFirstChild((IXML_Node*) tdoc);
+							if(ixmlDocument_importNode(didldoc, cnode, TRUE, &tnode) == IXML_SUCCESS) {
+								ixmlNode_appendChild((IXML_Node*)parent, tnode);
+								numReturned++;
+							}
+							ixmlDocument_free(tdoc);
+						}
+					}
+					else if(res->getType() == "object.item.videoItem") {
+						Video* vid = (Video*) res;
+						if(!vid->title.empty()) {
+							xml = "<root>" + vid->getXML() + "</root>";
+							tdoc = ixmlParseBuffer((char*)xml.c_str());
+							if(tdoc != NULL) {
+								cnode = ixmlNode_getFirstChild((IXML_Node*) tdoc);
+								if(ixmlDocument_importNode(didldoc, cnode, TRUE, &tnode) == IXML_SUCCESS) {
+									ixmlNode_appendChild((IXML_Node*)parent, tnode);
+									numReturned++;
+								}
+								ixmlDocument_free(tdoc);
+							}
+						}
+					}
+					resiterator++;
+				}				
+			}
+		}
+	}
+
+
+	cout << "creating soapage" << endl;
+	doc = ixmlDocument_createDocument();
+	parent = ixmlDocument_createElementNS(doc, "urn:schemas-upnp-org:service:ContentDirectory:1", "u:BrowseResponse");
+	ixmlNode_appendChild((IXML_Node*) doc, (IXML_Node*) parent);
+	makeElement(doc, (IXML_Node*) parent, "Result", ixmlPrintDocument(didldoc));
+	temp.str(""); temp << numReturned;
+	makeElement(doc, (IXML_Node*) parent, "NumberReturned", temp.str().c_str());
+	makeElement(doc, (IXML_Node*) parent, "TotalMatches", temp.str().c_str());
+	makeElement(doc, (IXML_Node*) parent, "UpdateID", "1");
+
+	//printf("Search: %s", ixmlPrintDocument(request->ActionRequest));
+	//printf("Response: %s", ixmlPrintDocument(doc));
+
+	request->ActionResult = doc;
+
+	return 1;
 }

@@ -13,9 +13,12 @@
 
 #include "directory.h"
 #include "resource.h"
+#include "transcoder.h"
 
 #include <iostream>
 #include <sstream>
+
+#define FIFO_NAME "/tmp/lawlercode.wmv"
 
 using namespace std;
 
@@ -28,7 +31,7 @@ Directory* contentDirectory;
 
 struct file_handle {
 	int fd;
-	char* tmpfile;
+	Transcoder* tc;
 };
 
 Resource* httpd_get_resource(const char* fakefilepath) {
@@ -100,20 +103,24 @@ UpnpWebFileHandle httpd_file_open(const char* filename, enum UpnpOpenFileMode Mo
 		fh = (struct file_handle*)calloc(1, sizeof(struct file_handle));
 		if(fh != NULL) {
 			fh->fd = -1;
-			fh->tmpfile = NULL;
+			fh->tc = NULL;
 
-			if(!res->transcode) {
+			//if(!res->transcode) {
 				if(Mode == UPNP_READ) {
 					fh->fd = open(res->getFile().c_str(), O_RDONLY);
 				}
 				else if(Mode == UPNP_WRITE) {
 					fh->fd = open(res->getFile().c_str(), O_WRONLY);
 				}
-			}
-			else if(Mode == UPNP_READ) {
-				fprintf(stderr, "Error: Transcoding not supported (yet)\n");
-				fh = NULL;
-			}
+			//}
+			/*else if(Mode == UPNP_READ) {
+				fh->fd = mkfifo(FIFO_NAME, S_IRWXU);
+
+				fh->tc = new Transcoder();
+				fh->tc->setInputFile(res->getFile());
+				fh->tc->setOutputFile(FIFO_NAME, CODEC_ID_WMV2, CODEC_ID_NONE);
+				fh->tc->startTranscoder();
+			}*/
 
 
 			if(fh->fd == -1) {
@@ -150,10 +157,11 @@ int httpd_file_close(UpnpWebFileHandle fileHnd) {
 
 	close(fh->fd);
 
-	if(fh->tmpfile != NULL) {
-		printf("Deleting temp file %s\n", fh->tmpfile);
-		unlink(fh->tmpfile);
-		free(fh->tmpfile);
+	if(fh->tc != NULL) {
+		fh->tc->stopTranscoder();
+		delete fh->tc;
+		fh->tc = NULL;
+		unlink(FIFO_NAME);
 	}
 
 	return ret;
@@ -174,7 +182,10 @@ int handleActionRequest(struct Upnp_Action_Request* act_request) {
 		act_request->ActionResult = ixmlParseBuffer("<m:IsValidatedResponse xmlns:m=\"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1\"><Result>1</Result></m:IsValidatedResponse>");
 	}
 	else if(strcmp(act_request->ActionName, "Search") == 0) {
-		contentDirectory->handleRequest(act_request);
+		contentDirectory->handleSearch(act_request);
+	}
+	else if(strcmp(act_request->ActionName, "Browse") == 0) {
+		contentDirectory->handleBrowse(act_request);
 	}
 	else {
 		printf("Request: %s", ixmlPrintDocument(act_request->ActionRequest));
