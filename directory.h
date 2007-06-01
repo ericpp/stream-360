@@ -28,7 +28,8 @@ class Directory {
 		int addFolder(std::string);
 		Resource* getResourceByID(unsigned);
 		//std::vector<Resource*> search(std::string containerID, std::string searchCriteria, std::string filter, int startIndex, int total, std::string sortCriteria);
-		int handleRequest(Upnp_Action_Request* request);
+		int handleSearch(Upnp_Action_Request* request);
+		int handleBrowse(Upnp_Action_Request* request);
 		std::map<std::string,std::string> getSearchCriteria(std::string);
 
 };
