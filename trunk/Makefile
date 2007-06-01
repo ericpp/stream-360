@@ -1,6 +1,6 @@
 CPPFLAGS=-Wall -O3
 LIBS=-lupnp -lixml -lthreadutil -lpthread -lid3tag -lavformat
-OBJECTS=stream360.o xmlutils.o directory.o resource.o music.o video.o container.o
+OBJECTS=stream360.o xmlutils.o directory.o resource.o music.o video.o container.o transcoder.o
 
 all: stream360
 
