@@ -197,35 +197,49 @@ int handleUpnpEvent(Upnp_EventType EventType, void* Event, void* Cookie) {
 	switch(EventType) {
 		case UPNP_EVENT_SUBSCRIPTION_REQUEST:
 			printf("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
+			break;
 		case UPNP_CONTROL_GET_VAR_REQUEST:
 			printf("UPNP_CONTROL_GET_VAR_REQUEST\n");
+			break;
 		case UPNP_CONTROL_ACTION_REQUEST:
 			ret = handleActionRequest((struct Upnp_Action_Request*) Event);
+			break;
 	        case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
 			printf("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
-			
+			break;
 	        case UPNP_DISCOVERY_SEARCH_RESULT:
 			printf("UPNP_DISCOVERY_SEARCH_RESULT\n");
+			break;
 	        case UPNP_DISCOVERY_SEARCH_TIMEOUT:
 			printf("UPNP_DISCOVERY_SEARCH_TIMEOUT\n");
+			break;
 	        case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
 			printf("UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE\n");
+			break;
 	        case UPNP_CONTROL_ACTION_COMPLETE:
 			printf("UPNP_CONTROL_ACTION_COMPLETE\n");
+			break;
 	        case UPNP_CONTROL_GET_VAR_COMPLETE:
 			printf("UPNP_CONTROL_GET_VAR_COMPLETE\n");
+			break;
 	        case UPNP_EVENT_RECEIVED:
 			printf("UPNP_EVENT_RECEIVED\n");
+			break;
 	        case UPNP_EVENT_RENEWAL_COMPLETE:
 			printf("UPNP_EVENT_RENEWAL_COMPLETE\n");
+			break;
 	        case UPNP_EVENT_SUBSCRIBE_COMPLETE:
 			printf("UPNP_EVENT_SUBSCRIBE_COMPLETE\n");
+			break;
 	        case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
 			printf("UPNP_EVENT_UNSUBSCRIBE_COMPLETE\n");
+			break;
 		case UPNP_EVENT_AUTORENEWAL_FAILED:
 			printf("UPNP_EVENT_AUTORENEWAL_FAILED\n");
+			break;
 		case UPNP_EVENT_SUBSCRIPTION_EXPIRED:
 			printf("UPNP_EVENT_SUBSCRIPTION_EXPIRED\n");
+			break;
 	}
 
 	return ret;
