@@ -8,8 +8,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <vlc/vlc.h>
-#include <ffmpeg/avformat.h>
 
 #include "directory.h"
 #include "resource.h"
@@ -82,7 +80,7 @@ int httpd_file_info(const char* filename, struct File_Info* info) {
 
 			info->content_type = ixmlCloneDOMString(realmime.c_str());
 
-			printf("file length=%d isdir=%d type=%s\n", info->file_length, info->is_directory, info->content_type);
+			printf("file length=%d isdir=%d type=%s\n", (int)info->file_length, info->is_directory, info->content_type);
 
 			return 0;
 		}

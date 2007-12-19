@@ -1,11 +1,16 @@
 #ifndef _TRANSCODER_H
 #define _TRANSCODER_H
 
+extern "C" {
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
+#include <ffmpeg/fifo.h>
+}
+
 #include <pthread.h>
 
 #include <string>
+
 
 class Transcoder {
 	std::string inputFile;

@@ -189,13 +189,13 @@ void Transcoder::transcode() {
 	float t, tincr;
 	int64_t pt;
 	ReSampleContext* resample;
-	FifoBuffer fifo;
+	AVFifoBuffer fifo;
 
 	frame = avcodec_alloc_frame();
 	frameRGB = avcodec_alloc_frame();
 
 
-	fifo_init(&fifo, AVCODEC_MAX_AUDIO_FRAME_SIZE);
+	av_fifo_init(&fifo, AVCODEC_MAX_AUDIO_FRAME_SIZE);
 
 	outbuf_len = avpicture_get_size(videoStream->codec->pix_fmt, videoStream->codec->width, videoStream->codec->height);
 	outbuf = (uint8_t*) calloc(outbuf_len, sizeof(uint8_t));
@@ -272,15 +272,15 @@ void Transcoder::transcode() {
 				if(audioStream->codec->sample_rate != audioStreamOut->codec->sample_rate || audioStream->codec->channels != audioStreamOut->codec->channels) {
 					// resample the audio
 					resamplebuf_len = audio_resample(resample, (short*)resamplebuf, (short*)audiobuf, audiobuf_len / (audioStream->codec->channels * 2));
-					fifo_write(&fifo, resamplebuf, resamplebuf_len * audioStreamOut->codec->channels * 2, &fifo.wptr);
+					av_fifo_write(&fifo, resamplebuf, resamplebuf_len * audioStreamOut->codec->channels * 2);
 				}
 				else {
-					fifo_write(&fifo, audiobuf, audiobuf_len, &fifo.wptr);
+					av_fifo_write(&fifo, audiobuf, audiobuf_len);
 				}
 
 				if(audiobuf_len > 0) {
 					int frame_bytes = audioStreamOut->codec->frame_size * 2 * audioStreamOut->codec->channels;
-					while(fifo_read(&fifo, databuf, frame_bytes, &fifo.rptr) == 0) {
+					while(av_fifo_read(&fifo, databuf, frame_bytes) == 0) {
 						AVPacket pkt;
 						av_init_packet(&pkt);
 
