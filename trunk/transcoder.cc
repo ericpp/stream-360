@@ -234,9 +234,14 @@ void Transcoder::transcode() {
 			//				outputCodecCtx->frame_rate);
 
 			if(frameFinished) {
-				img_convert((AVPicture *)frameRGB, PIX_FMT_YUV420P, 
-					(AVPicture*)frame, videoStream->codec->pix_fmt, videoStream->codec->width, 
-					videoStream->codec->height);
+				//img_convert((AVPicture *)frameRGB, PIX_FMT_YUV420P, 
+				//	(AVPicture*)frame, videoStream->codec->pix_fmt, videoStream->codec->width, 
+				//	videoStream->codec->height);
+			/* I haven't tested this... */
+			sws_getCachedContext(NULL, videoStream->codec->width, videoStream->codec->height,
+				videoStream->codec->pix_fmt, videoStream->codec->width, videoStream->codec->height,
+				PIX_FMT_YUV420P, NULL, NULL, NULL, NULL);
+
 
 				out_size = avcodec_encode_video(videoStreamOut->codec, outbuf, outbuf_len, frame);
 				//fprintf(stderr,"size = %d, ff = %d, outsize=%d\n", packet.size, frameFinished, out_size);

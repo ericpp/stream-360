@@ -5,6 +5,7 @@ extern "C" {
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/fifo.h>
+#include <ffmpeg/swscale.h>
 }
 
 #include <pthread.h>

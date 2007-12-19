@@ -5,7 +5,9 @@
 #include <upnp/upnp.h>
 #include <upnp/upnptools.h>
 
+extern "C" {
 #include <ffmpeg/avformat.h>
+}
 
 #include "video.h"
 
