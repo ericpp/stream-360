@@ -1,13 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+
+extern "C" {
+
+#include <fcntl.h>
+
+// HACK HACK HACK
+#define off_t loff_t
+// HACK HACK HACK
+
 #include <upnp/upnp.h>
 #include <upnp/upnptools.h>
-#include <unistd.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+}
+
 
 #include "directory.h"
 #include "resource.h"
@@ -15,8 +21,6 @@
 
 #include <iostream>
 #include <sstream>
-
-#define FIFO_NAME "/tmp/lawlercode.wmv"
 
 using namespace std;
 
@@ -32,29 +36,36 @@ struct file_handle {
 	Transcoder* tc;
 };
 
+
 Resource* httpd_get_resource(const char* fakefilepath) {
-	int num;
+	int num = 0;
+	char junk = 0;
 	int ret;
 	Resource* res = NULL;
 
 	printf("Request for URL: %s\n", fakefilepath);
 
-	ret = sscanf(fakefilepath, "/content/%d", &num);
-	if(ret != -1) {
+	ret = sscanf(fakefilepath, "/content/%d%c", &num, &junk);
+	if(ret == 1 && num != 0) {
 		res = contentDirectory->getResourceByID(num);
 	}
 
 	return res;
 }
 
-int httpd_file_info(const char* filename, struct File_Info* info) {
+static int httpd_file_info(const char* filename, struct File_Info* info) {
 	FILE* fp;
 	struct stat fstat;
 	Resource* res;
 	string realfile;
 	string realmime;
+	int retval = -1;
+
+	printf("Getting info for URL: %s\n", filename);
 
 	res = httpd_get_resource(filename);
+
+	bzero(info, sizeof(struct File_Info));
 
 	if(res != NULL) {
 		realfile = res->getFile();
@@ -80,21 +91,30 @@ int httpd_file_info(const char* filename, struct File_Info* info) {
 
 			info->content_type = ixmlCloneDOMString(realmime.c_str());
 
-			printf("file length=%d isdir=%d type=%s\n", (int)info->file_length, info->is_directory, info->content_type);
-
-			return 0;
+			retval = 0;
 		}
 	}
 
-	return -1;
+	printf("file_length: %d\n", (int)info->file_length);
+	printf("last_modified: %d\n", (int)info->last_modified);
+	printf("is_directory: %d\n", (int)info->is_directory);
+	printf("is_readable: %d\n", (int)info->is_readable);
+	printf("content_type: %s\n", (char*)info->content_type);
+
+	printf("returning: %d\n", retval);
+	return retval;
 }
 
-UpnpWebFileHandle httpd_file_open(const char* filename, enum UpnpOpenFileMode Mode) {
+static UpnpWebFileHandle httpd_file_open(const char* filename, enum UpnpOpenFileMode Mode) {
 	//FILE* fp = NULL;
 	struct file_handle* fh = NULL;
 	Resource* res;
 
+	printf("Attempting to open %s\n", filename);
+	fflush(NULL);
+
 	res = httpd_get_resource(filename);
+
 	if(res != NULL) {
 		printf("Opening %s\n", res->getFile().c_str());
 
@@ -131,7 +151,7 @@ UpnpWebFileHandle httpd_file_open(const char* filename, enum UpnpOpenFileMode Mo
 	return fh;
 }
 
-int httpd_file_read(UpnpWebFileHandle fileHnd, char* buf, size_t buflen) {
+static int httpd_file_read(UpnpWebFileHandle fileHnd, char* buf, size_t buflen) {
 	int ret;
 	ret = read(((struct file_handle*)fileHnd)->fd, buf, buflen);
 	printf("read %x: %d / %d bytes\n", (int)fileHnd, ret, buflen);
@@ -139,17 +159,17 @@ int httpd_file_read(UpnpWebFileHandle fileHnd, char* buf, size_t buflen) {
 	return ret;
 }
 
-int httpd_file_write(UpnpWebFileHandle fileHnd, char* buf, size_t buflen) {
-	//printf("write %x: %d bytes\n", fileHnd, buflen);
+static int httpd_file_write(UpnpWebFileHandle fileHnd, char* buf, size_t buflen) {
+	printf("write %x: %d bytes\n", fileHnd, buflen);
 	return write(((struct file_handle*)fileHnd)->fd, buf, buflen);
 }
 
-int httpd_file_seek(UpnpWebFileHandle fileHnd, long offset, int origin) {
+static int httpd_file_seek(UpnpWebFileHandle fileHnd, off_t offset, int origin) {
 	//printf("lseek %x: %d %d\n", fileHnd, offset, origin);
 	return lseek(((struct file_handle*)fileHnd)->fd, offset, origin);
 }
 
-int httpd_file_close(UpnpWebFileHandle fileHnd) {
+static int httpd_file_close(UpnpWebFileHandle fileHnd) {
 	struct file_handle* fh = (struct file_handle*) fileHnd;
 	int ret = -1;
 
@@ -159,7 +179,6 @@ int httpd_file_close(UpnpWebFileHandle fileHnd) {
 		fh->tc->stopTranscoder();
 		delete fh->tc;
 		fh->tc = NULL;
-		unlink(FIFO_NAME);
 	}
 
 	return ret;
@@ -288,7 +307,13 @@ int initUpnpServer() {
 		printf("Error setting webserver file handlers: %d\n", ret);
 	}
 
-	UpnpAddVirtualDir("content");
+	ret = UpnpAddVirtualDir("content");
+	if(ret != UPNP_E_SUCCESS) {
+		printf("Error setting webserver callbacks: %d", ret);
+		UpnpFinish();
+		return ret;
+	}
+
 
 
 	ret = UpnpRegisterRootDevice(desc_doc_url, handleUpnpEvent, &Cookie, &device_handle);
