@@ -364,8 +364,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	while(!feof(fp)) {
-		if(fgets(buf, 4096, fp) != NULL && buf[0] != '#') {
-			trim(buf, strlen(buf));
+		if(fgets(buf, 4096, fp) != NULL && buf[0] != '#' && buf[0] != '\r' && buf[0] != '\n') {
+			trim(buf, strnlen(buf,4096));
 			contentDirectory->addFolder(buf);
 		}
 	}
