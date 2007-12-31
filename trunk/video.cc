@@ -34,7 +34,7 @@ string Video::getXML() {
 	ss << "  <upnp:author>" << this->author << "</upnp:author>" << endl;
 	ss << "  <upnp:class>" << this->getType() << "</upnp:class>" << endl;
 
-	ss << "  <res size=\"" << this->getFileSize() << "\" protocolInfo=\"http-get:*:video/x-ms-wmv:*\">" << "http://" << UpnpGetServerIpAddress() << ":" << UpnpGetServerPort() << "/content/" << this->getID() << "</res>";
+	ss << "  <res size=\"" << this->getFileSize() << "\" protocolInfo=\"http-get:*:" << this->getMimeType() << ":*\">" << "http://" << UpnpGetServerIpAddress() << ":" << UpnpGetServerPort() << "/content/" << this->getID() << "</res>";
 
 	ss << "</item>" << endl;
 
