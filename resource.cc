@@ -26,16 +26,21 @@ Resource::Resource(unsigned id, string type, string title, string path) {
 	else if(path.find(".wmv") != string::npos) {
 		this->mimetype = "video/x-ms-wmv";
 	}
-	else if((path.find(".avi") != string::npos) || (path.find(".asf") != string::npos) || (path.find(".mov") != string::npos) || (path.find(".mpg") != string::npos)) {
-		this->mimetype = "video/x-ms-wmv";
-		this->transcode = true;
-	}
-	/*else if(path.find(".asf") != string::npos) {
-		this->mimetype = "video/x-ms-asf";
+	else if(path.find(".mov") != string::npos) {
+		this->mimetype = "video/quicktime";
 	}
 	else if(path.find(".mpg") != string::npos) {
 		this->mimetype = "video/mpeg";
-	}*/
+	}
+	else if(path.find(".asf") != string::npos) {
+		this->mimetype = "video/x-ms-asf";
+	}
+	else if(path.find(".avi") != string::npos) {
+		this->mimetype = "video/x-ms-wmv";
+	}
+	else if(path.find(".m4v") != string::npos) {
+		this->mimetype = "video/m4v";
+	}
 }
 
 Resource::~Resource() {}

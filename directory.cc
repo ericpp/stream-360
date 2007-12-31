@@ -109,7 +109,7 @@ int Directory::addFolder(string path) {
 						}
 					}
 					//else if((filePath.find(".wmv") != string::npos)) {
-					else if((filePath.find(".wmv") != string::npos) || (filePath.find(".avi") != string::npos) || (filePath.find(".asf") != string::npos) || (filePath.find(".mov") != string::npos) || (filePath.find(".mpg") != string::npos)){
+					else if((filePath.find(".wmv") != string::npos) || (filePath.find(".avi") != string::npos) || (filePath.find(".asf") != string::npos) || (filePath.find(".mov") != string::npos) || (filePath.find(".mpg") != string::npos) || (filePath.find(".m4v") != string::npos)){
 						res = new Video(this->globalID++, string(dirent->d_name), filePath);
 						if(res != NULL) {
 							this->addVideo((Video*)res);
